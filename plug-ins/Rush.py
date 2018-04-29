@@ -7,9 +7,6 @@ from PySide2 import QtWidgets, QtCore, QtGui
 import shiboken2
 
 import rush
-import logging
-import string
-import random
 import json
 import sys
 import os
@@ -45,33 +42,6 @@ try:
     f.close()
 except IOError:
     CMD_DICT = {}
-
-
-def setupLogger(verbose=False):
-    """
-
-    Args:
-        verbose (bool): verbose mode
-
-    Return:
-        type: return value
-
-    """
-    if verbose:
-        lv = logging.DEBUG
-    else:
-        lv = logging.CRITICAL
-
-    tempLogName = 'Rush : ' + ''.join(
-        random.SystemRandom().choice(
-            string.ascii_uppercase + string.digits) for _ in range(10))
-
-    logger = logging.getLogger(tempLogName)
-    handler = logging.StreamHandler()
-    logger.setLevel(lv)
-    handler.setLevel(lv)
-    logger.addHandler(handler)
-    return logger
 
 
 def loadStyle():
@@ -320,18 +290,16 @@ class Gui(rush.RushCommands, QtWidgets.QFrame):
             except:
                 pass
 
-    def __init__(self, logger, cmdDict, menu=False, parent=None):
+    def __init__(self, cmdDict, menu=False, parent=None):
         """
 
         Args:
-            logger (Logger): logger
             cmdDict (dict): Dict of all commands
 
         """
         self.closeExistingWindow()
         super(Gui, self).__init__(parent)
 
-        self.logger = logger
         self.menu = menu
         self.cmdDict = cmdDict
         self.history = History()
@@ -498,7 +466,8 @@ class Gui(rush.RushCommands, QtWidgets.QFrame):
         try:
             f = getattr(self, "_%s" % cmd)
             f()
-            self.logger.debug("Running command : %s" % cmd)
+            if self.verbose:
+                print("Running command : %s" % cmd)
 
             # Add to repeatLast command so the comamnd can be repeatable
             # by G key
@@ -532,9 +501,7 @@ class Rush(OpenMaya.MPxCommand):
         if argData.isFlagSet(kMenuFlag):
             self.menu = argData.flagArgumentBool(kMenuFlag, 0)
 
-        logger = setupLogger(self.verbose)
-
-        self.mw = Gui(logger, CMD_DICT, self.menu, getMayaWindow())
+        self.mw = Gui(CMD_DICT, self.menu, getMayaWindow())
         self.mw.show()
 
         pos = QtGui.QCursor.pos()
@@ -587,7 +554,7 @@ def initializePlugin(mObject):
         mobject (OpenMaya.MObject):
 
     """
-    mplugin = OpenMaya.MFnPlugin(mObject, "Michitaka Inoue", "2.1.1", "Any")
+    mplugin = OpenMaya.MFnPlugin(mObject, "Michitaka Inoue", "2.1.2", "Any")
     try:
         mplugin.registerCommand(kPluginCmdName, Rush.cmdCreator, syntaxCreator)
     except:

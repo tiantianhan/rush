@@ -1,18 +1,8 @@
 from maya import cmds
-import logging
 import json
 import sys
 import imp
 import os
-
-# level = logging.DEBUG
-level = logging.ERROR
-
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-logger.addHandler(handler)
-logger.setLevel(level)
-handler.setLevel(level)
 
 
 def loadConfig():
@@ -40,7 +30,7 @@ def loadConfig():
         f.close()
     except IOError:
         config = [defaultModulePath]
-        logger.debug("Failed to load config file")
+        cmds.error("Failed to load config file")
 
     return config
 
@@ -56,14 +46,14 @@ def initConfig(configPath, defaultModulePath):
         None
 
     """
-    logger.debug("Config file doesn't exist. Creating a new config file")
+    print("Rush: Config file doesn't exist. Creating a new config file")
     # Init config file
     try:
         with open(configPath, 'w') as outFile:
             outFile.writelines([defaultModulePath])
-        logger.debug("Created new config file")
+        print("Rush: Created new config file")
     except IOError:
-        logger.debug("Failed to save config file")
+        cmds.warning("Rush: Failed to save config file")
 
 
 def getModulePath(path):
@@ -125,7 +115,7 @@ def loadModule(path):
         mod = imp.load_source(name, path)
         return mod
     except:
-        logger.debug("Failed to load module : %s" % path)
+        cmds.warning("Rush: Failed to load module : %s" % path)
         return None
 
 
@@ -143,7 +133,7 @@ def getClassList(config):
     # Create a single list of module paths
     moduleList = []
     for path in config:
-        logger.debug("Module path: %s " % path)
+        print("Rush: Module path: %s " % path)
         pathList = getModulePath(path)
         if pathList is not None:
             moduleList.extend(pathList)
@@ -164,13 +154,13 @@ def getClassList(config):
                 cmds.unloadPlugin("Rush.py")
                 cmds.loadPlugin("Rush.py")
             except:
-                print "Failed to reload plugin"
+                print "Rush: Failed to reload plugin"
         commandDict['reloadRush'] = "sphere.png"
 
     # Crate a list of classes
     commandClassList = [i.Commands for i in moduleObjectList]
     commandClassList.append(Reload)
-    logger.debug("All command classes: %s" % str(commandClassList))
+    print("Rush: All command classes: %s" % str(commandClassList))
 
     # Create and write a list of all commands for the completer in main plugin
     cmdsDict = {}
@@ -210,7 +200,7 @@ def saveCommands(path, cmdsDict):
 
     """
 
-    logger.debug("Saving command file to %s" % path)
+    print("Rush: Saving command file to %s" % path)
 
     try:
         with open(path, 'w') as outFile:
@@ -221,7 +211,7 @@ def saveCommands(path, cmdsDict):
                 separators=(',', ':'),
                 sort_keys=True)
     except IOError:
-        logger.debug("Failed to save command file")
+        print("Rush: Failed to save command file")
 
 
 class RushCommands(object):
