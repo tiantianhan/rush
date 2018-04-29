@@ -1,7 +1,6 @@
 Rush
 ========
 
-[日本語](https://github.com/minoue/rush/blob/master/README_jp.md)
 
 TabMenu-like simple command launcher for Maya (formerly miExecutor)
 
@@ -10,18 +9,14 @@ TabMenu-like simple command launcher for Maya (formerly miExecutor)
 
 ![gif](https://github.com/minoue/miExecutor/blob/media/images/demo.gif)
 
-## Requirements
-
-[Qt.py](https://github.com/mottosso/Qt.py)
-
 ## Installation and setup
 
 ### Install from zip file
-1. Make sure to install [Qt.py](https://github.com/mottosso/Qt.py) first.
-2. Download [zip](https://github.com/minoue/rush/releases/download/2.1.0/rush.zip) file and extract it.
-3. Move the extracted "rush" folder to your user script directory. e.g. C:\Users\YOURNAME\Documents\maya\2017\scripts
-4. Move the 'Rush.py' in rush\plug-ins directory to your maya plug-ins directory.  e.g C:\Users\YOURNAME\Documents\maya\plug-ins
-5. Add the follwoing line to your userSetup.py. This is required to make your commands repeatable by G key
+1. Download [zip](https://github.com/minoue/rush/releases/download/2.1.0/rush.zip) file and extract it.
+2. Move the extracted "rush" folder to your user script directory.
+e.g. ```C:\Users\YOURNAME\Documents\maya\2017\scripts```
+3. Move the 'Rush.py' from rush\plug-ins directory to your maya plug-ins directory.  e.g ```C:\Users\YOURNAME\Documents\maya\plug-ins```
+4. Add the follwoing line to your userSetup.py. This is required to make your commands repeatable by G key
 
 	```python
 	import rush
@@ -33,7 +28,7 @@ TabMenu-like simple command launcher for Maya (formerly miExecutor)
 
 ### Install using git
 If git command is available to you, alternatively you can install using git command.  
-In your user script directory,
+Go to your user script directory,
 
 ```
 git clone https://github.com/minoue/rush.git
