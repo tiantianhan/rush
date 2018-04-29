@@ -520,16 +520,12 @@ class Rush(OpenMaya.MPxCommand):
 
         self.verbose = False
         self.menu = False
-        self.cmdArg = "Initial arg"
 
     def doIt(self, args):
 
         # Parse the arguments.
         argData = OpenMaya.MArgDatabase(self.syntax(), args)
-        try:
-            self.cmdArg = argData.commandArgumentString(0)
-        except RuntimeError:
-            pass
+
         if argData.isFlagSet(kVerboseFlag):
             self.verbose = argData.flagArgumentBool(kVerboseFlag, 0)
 
@@ -538,10 +534,7 @@ class Rush(OpenMaya.MPxCommand):
 
         logger = setupLogger(self.verbose)
 
-        self.mw = Gui(logger,
-                      CMD_DICT,
-                      self.menu,
-                      getMayaWindow())
+        self.mw = Gui(logger, CMD_DICT, self.menu, getMayaWindow())
         self.mw.show()
 
         pos = QtGui.QCursor.pos()
@@ -574,7 +567,6 @@ def syntaxCreator():
 
     """
     syntax = OpenMaya.MSyntax()
-    syntax.addArg(OpenMaya.MSyntax.kString)
     syntax.addFlag(kVerboseFlag, kVerboseLongFlag, OpenMaya.MSyntax.kBoolean)
     syntax.addFlag(kMenuFlag, kMenuFlagLong, OpenMaya.MSyntax.kBoolean)
     return syntax
@@ -588,14 +580,14 @@ def maya_useNewAPI():
     pass
 
 
-def initializePlugin(mobject):
+def initializePlugin(mObject):
     """ Initialize the script plug-in
 
     Args:
         mobject (OpenMaya.MObject):
 
     """
-    mplugin = OpenMaya.MFnPlugin(mobject, "Michitaka Inoue", "2.1.1", "Any")
+    mplugin = OpenMaya.MFnPlugin(mObject, "Michitaka Inoue", "2.1.1", "Any")
     try:
         mplugin.registerCommand(kPluginCmdName, Rush.cmdCreator, syntaxCreator)
     except:
@@ -603,15 +595,14 @@ def initializePlugin(mobject):
         raise
 
 
-def uninitializePlugin(mobject):
+def uninitializePlugin(mObject):
     """ Uninitialize the script plug-in
 
     Args:
         mobject (OpenMaya.MObject):
 
     """
-    # mplugin = OpenMayaMPx.MFnPlugin(mobject)
-    mplugin = OpenMaya.MFnPlugin(mobject)
+    mplugin = OpenMaya.MFnPlugin(mObject)
     try:
         mplugin.deregisterCommand(kPluginCmdName)
     except:
