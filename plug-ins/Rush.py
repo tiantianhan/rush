@@ -3,10 +3,8 @@ from maya import OpenMayaUI
 from maya.api import OpenMaya
 from maya import cmds
 from maya import mel
-try:
-    import shiboken
-except ImportError:
-    import shiboken2 as shiboken
+from PySide2 import QtWidgets, QtCore, QtGui
+import shiboken2
 
 import rush
 import logging
@@ -15,7 +13,6 @@ import random
 import json
 import sys
 import os
-import Qt
 reload(rush)
 
 
@@ -93,8 +90,8 @@ def loadStyle():
 
 
 def getMayaWindow():
-        ptr = OpenMayaUI.MQtUtil.mainWindow()
-        return shiboken.wrapInstance(long(ptr), Qt.QtWidgets.QMainWindow)
+    ptr = OpenMayaUI.MQtUtil.mainWindow()
+    return shiboken2.wrapInstance(long(ptr), QtWidgets.QMainWindow)
 
 
 class History(object):
@@ -166,19 +163,19 @@ class History(object):
         pass
 
 
-class CustomQLineEdit(Qt.QtWidgets.QLineEdit):
+class CustomQLineEdit(QtWidgets.QLineEdit):
     """ Custom QLineEdit with custom events and signals
     Reference:
     https://ilmvfx.wordpress.com/2016/11/02/how-to-add-a-search-icon-and-clear-button-to-qlineedit/
     """
 
-    escPressed = Qt.QtCore.Signal(str)
-    tabPressed = Qt.QtCore.Signal(str)
-    downPressed = Qt.QtCore.Signal(str)
+    escPressed = QtCore.Signal(str)
+    tabPressed = QtCore.Signal(str)
+    downPressed = QtCore.Signal(str)
 
     def __init__(self, parent=None):
         super(CustomQLineEdit, self).__init__(parent)
-        self.setFocusPolicy(Qt.QtCore.Qt.StrongFocus)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         b64_data = (
             'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tI'
@@ -211,14 +208,14 @@ class CustomQLineEdit(Qt.QtWidgets.QLineEdit):
             '8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+'
             'CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=')
 
-        data = Qt.QtCore.QByteArray.fromBase64(b64_data)
-        tempPixmap = Qt.QtGui.QPixmap()
+        data = QtCore.QByteArray.fromBase64(b64_data)
+        tempPixmap = QtGui.QPixmap()
         tempPixmap.loadFromData(data)
         self.iconPixmap = tempPixmap.scaled(
             20,
             20,
-            Qt.QtCore.Qt.IgnoreAspectRatio,
-            Qt.QtCore.Qt.SmoothTransformation)
+            QtCore.Qt.IgnoreAspectRatio,
+            QtCore.Qt.SmoothTransformation)
 
         self.setTextMargins(26, 0, 0, 0)
 
@@ -227,11 +224,11 @@ class CustomQLineEdit(Qt.QtWidgets.QLineEdit):
         self.escPressed.emit('esc')
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.QtCore.Qt.Key_Escape:
+        if event.key() == QtCore.Qt.Key_Escape:
             self.escPressed.emit('esc')
-        elif event.key() == Qt.QtCore.Qt.Key_Tab:
+        elif event.key() == QtCore.Qt.Key_Tab:
             self.tabPressed.emit('tab')
-        elif event.key() == Qt.QtCore.Qt.Key_Down:
+        elif event.key() == QtCore.Qt.Key_Down:
             self.downPressed.emit('down')
         else:
             super(CustomQLineEdit, self).keyPressEvent(event)
@@ -239,7 +236,7 @@ class CustomQLineEdit(Qt.QtWidgets.QLineEdit):
     def paintEvent(self, event):
         super(CustomQLineEdit, self).paintEvent(event)
 
-        painter = Qt.QtGui.QPainter(self)
+        painter = QtGui.QPainter(self)
         painter.setOpacity(0.75)
         height = self.iconPixmap.height()
         right_border = 8
@@ -247,7 +244,7 @@ class CustomQLineEdit(Qt.QtWidgets.QLineEdit):
             right_border+2, (self.height() - height) / 2, self.iconPixmap)
 
 
-class Menu(Qt.QtWidgets.QMenu):
+class Menu(QtWidgets.QMenu):
 
     def __init__(self, commandDict, width, parent=None):
         super(Menu, self).__init__(parent)
@@ -285,7 +282,7 @@ class Menu(Qt.QtWidgets.QMenu):
                 if num == 0:
                     m = getExistingMenu(self.menuList, category)
                     if m is None:
-                        menu = Qt.QtWidgets.QMenu(category)
+                        menu = QtWidgets.QMenu(category)
                         # rootMenu.addMenu(menu)
                         self.addMenu(menu)
                         self.menuList.append(menu)
@@ -295,7 +292,7 @@ class Menu(Qt.QtWidgets.QMenu):
                 elif num == lastIndex:
                     m = getExistingMenu(self.menuList, category)
                     if m is None:
-                        subMenu = Qt.QtWidgets.QMenu(category)
+                        subMenu = QtWidgets.QMenu(category)
                         parentMenu.addMenu(subMenu)
                         self.menuList.append(subMenu)
                         parentMenu = subMenu
@@ -311,12 +308,12 @@ class Menu(Qt.QtWidgets.QMenu):
         self.parent().execute()
 
 
-class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
+class Gui(rush.RushCommands, QtWidgets.QFrame):
 
     def closeExistingWindow(self):
         """ Close window if exists """
 
-        for qt in Qt.QtWidgets.QApplication.topLevelWidgets():
+        for qt in QtWidgets.QApplication.topLevelWidgets():
             try:
                 if qt.__class__.__name__ == self.__class__.__name__:
                     qt.close()
@@ -339,17 +336,17 @@ class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
         self.cmdDict = cmdDict
         self.history = History()
 
-        self.setAttribute(Qt.QtCore.Qt.WA_DeleteOnClose)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("Rush")
-        self.setWindowFlags(Qt.QtCore.Qt.Window)
+        self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowFlags(
-            Qt.QtCore.Qt.Popup | Qt.QtCore.Qt.FramelessWindowHint)
+            QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         try:
             self.setWindowFlags(
-                self.windowFlags() | Qt.QtCore.Qt.NoDropShadowWindowHint)
+                self.windowFlags() | QtCore.Qt.NoDropShadowWindowHint)
         except AttributeError:
             pass
-        self.setAttribute(Qt.QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         # Dpi value to set the width for window and lineedit.
         self.dpi = self.physicalDpiX()
@@ -368,8 +365,8 @@ class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
         self.LE.setPlaceholderText("Search")
 
         # Layout
-        self.layout = Qt.QtWidgets.QBoxLayout(
-            Qt.QtWidgets.QBoxLayout.TopToBottom)
+        self.layout = QtWidgets.QBoxLayout(
+            QtWidgets.QBoxLayout.TopToBottom)
         self.layout.addWidget(self.LE)
         if self.menu is True:
             menu = Menu(self.cmdDict, self.dpi * 2.5)
@@ -378,16 +375,16 @@ class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
         self.setLayout(self.layout)
 
         # Set up QCompleter
-        self.completer = Qt.QtWidgets.QCompleter(self)
+        self.completer = QtWidgets.QCompleter(self)
         self.completer.setCompletionMode(
-            Qt.QtWidgets.QCompleter.UnfilteredPopupCompletion)
+            QtWidgets.QCompleter.UnfilteredPopupCompletion)
         self.completer.setModel(self.filteredModel)
         self.completer.setObjectName("commandCompleter")
 
         # Setup QCompleter for history
-        self.histCompleter = Qt.QtWidgets.QCompleter(self)
+        self.histCompleter = QtWidgets.QCompleter(self)
         self.histCompleter.setCompletionMode(
-            Qt.QtWidgets.QCompleter.UnfilteredPopupCompletion)
+            QtWidgets.QCompleter.UnfilteredPopupCompletion)
         self.histCompleter.setModel(self.historyModel)
 
         # Edit line Edit behavior
@@ -407,31 +404,31 @@ class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
 
         """
 
-        model = Qt.QtGui.QStandardItemModel()
+        model = QtGui.QStandardItemModel()
 
         # Create a list of command names
         self.commands = [i for i in self.cmdDict]
 
         # Add all command names and icon paths to the the model(model)
         for num, command in enumerate(self.cmdDict):
-            item = Qt.QtGui.QStandardItem(command)
+            item = QtGui.QStandardItem(command)
             if os.path.isabs(self.cmdDict[command]['icon']) is True:
                 iconPath = os.path.normpath(self.cmdDict[command]['icon'])
-                item.setIcon(Qt.QtGui.QIcon(iconPath))
+                item.setIcon(QtGui.QIcon(iconPath))
             else:
                 item.setIcon(
-                    Qt.QtGui.QIcon(":%s" % self.cmdDict[command]['icon']))
+                    QtGui.QIcon(":%s" % self.cmdDict[command]['icon']))
             model.setItem(num, 0, item)
 
         # Store the model(model) into the sortFilterProxy model
-        self.filteredModel = Qt.QtCore.QSortFilterProxyModel(self)
+        self.filteredModel = QtCore.QSortFilterProxyModel(self)
         self.filteredModel.setFilterCaseSensitivity(
-            Qt.QtCore.Qt.CaseInsensitive)
+            QtCore.Qt.CaseInsensitive)
         self.filteredModel.setSourceModel(model)
 
         # History model
         self.historyList = self.history.read()
-        self.historyModel = Qt.QtGui.QStandardItemModel()
+        self.historyModel = QtGui.QStandardItemModel()
 
         for num, command in enumerate(self.historyList):
 
@@ -440,13 +437,13 @@ class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
             if command not in self.cmdDict:
                 continue
 
-            item = Qt.QtGui.QStandardItem(command)
+            item = QtGui.QStandardItem(command)
             if os.path.isabs(self.cmdDict[command]['icon']) is True:
                 iconPath = os.path.normpath(self.cmdDict[command]['icon'])
-                item.setIcon(Qt.QtGui.QIcon(iconPath))
+                item.setIcon(QtGui.QIcon(iconPath))
             else:
                 item.setIcon(
-                    Qt.QtGui.QIcon(":%s" % self.cmdDict[command]['icon']))
+                    QtGui.QIcon(":%s" % self.cmdDict[command]['icon']))
             self.historyModel.setItem(num, 0, item)
 
     def updateData(self):
@@ -464,10 +461,10 @@ class Gui(rush.RushCommands, Qt.QtWidgets.QFrame):
             self.LE.setCompleter(self.completer)
 
         # Set commands to case insensitive
-        regExp = Qt.QtCore.QRegExp(
+        regExp = QtCore.QRegExp(
             self.LE.text(),
-            Qt.QtCore.Qt.CaseInsensitive,
-            Qt.QtCore.QRegExp.RegExp)
+            QtCore.Qt.CaseInsensitive,
+            QtCore.QRegExp.RegExp)
         self.filteredModel.setFilterRegExp(regExp)
 
     def tabCompletion(self):
@@ -547,7 +544,7 @@ class Rush(OpenMaya.MPxCommand):
                       getMayaWindow())
         self.mw.show()
 
-        pos = Qt.QtGui.QCursor.pos()
+        pos = QtGui.QCursor.pos()
         self.mw.move(
             pos.x() - (self.mw.width() / 2),
             pos.y() - (self.mw.height() / 2))
@@ -598,7 +595,7 @@ def initializePlugin(mobject):
         mobject (OpenMaya.MObject):
 
     """
-    mplugin = OpenMaya.MFnPlugin(mobject, "Michitaka Inoue", "2.1.0", "Any")
+    mplugin = OpenMaya.MFnPlugin(mobject, "Michitaka Inoue", "2.1.1", "Any")
     try:
         mplugin.registerCommand(kPluginCmdName, Rush.cmdCreator, syntaxCreator)
     except:
