@@ -35,7 +35,7 @@ QLineEdit
     border-radius: 10px;
     padding: 4px;
     border-width: 5px;
-    border-color: rgb(68, 68, 68);
+    border-color: rgb(95, 195, 206);
     font-size: 16pt;
 }
 """
